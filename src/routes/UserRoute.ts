@@ -1,4 +1,5 @@
 import express from "express";
+import { accessValidation } from "../middleware";
 import {
   createUser,
   deleteUser,
@@ -9,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get("/users", getUsers);
-router.get("/users/:id", getUserById);
-router.post("/users", createUser);
-router.patch("/users/:id", updateUser);
-router.delete("/users/:id", deleteUser);
+router.get("/users", accessValidation, getUsers);
+router.get("/users/:id", accessValidation, getUserById);
+router.post("/users", accessValidation, createUser);
+router.patch("/users/:id", accessValidation, updateUser);
+router.delete("/users/:id", accessValidation, deleteUser);
 
 export default router;

@@ -1,7 +1,7 @@
 import { DataTypes, Model, Optional } from "sequelize"; // ✅ Correct
 import db from "../config/Database";
 
-interface UserAttributes {
+export interface UserAttributes {
   id?: number; // optional if auto-increment
   uuid: string;
   name: string;

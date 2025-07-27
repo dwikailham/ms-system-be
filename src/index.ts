@@ -4,6 +4,7 @@ import cors from "cors";
 // import db from "./config/Database";
 // import "./models/UserModel";
 import UseRoute from "./routes/UserRoute";
+import AuthRoute from "./routes/AuthRoute";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(
 );
 app.use(express.json());
 app.use(UseRoute);
+app.use(AuthRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello from TypeScript and nodemon!");
