@@ -10,11 +10,34 @@ type UserBody = {
 };
 
 export const getUsers = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const offset = (page - 1) * limit;
+
   try {
-    const response = await Users.findAll({
-      attributes: ["uuid", "username", "name", "role"],
+    const { count, rows } = await Users.findAndCountAll({
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+      attributes: [
+        "uuid",
+        "username",
+        "name",
+        "role",
+        "createdAt",
+        "is_active",
+      ],
     });
-    res.status(200).json(response);
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({
+      data: rows,
+      meta: {
+        totalItems: count,
+        totalPages,
+        currentPage: page,
+        pageSize: limit,
+      },
+    });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
@@ -76,7 +99,7 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  const { name, username, password, role } = req.body;
+  const { name, username, password, role, is_active } = req.body;
 
   let hashPassword;
   if (password === "" || password === null) {
@@ -92,6 +115,7 @@ export const updateUser = async (req: Request, res: Response) => {
         username,
         password: hashPassword,
         role,
+        is_active,
       },
       {
         where: {

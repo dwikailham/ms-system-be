@@ -1,8 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-// import db from "./config/Database";
-// import "./models/UserModel";
+import db from "./config/Database";
+import "./models/UserModel";
 import UseRoute from "./routes/UserRoute";
 import AuthRoute from "./routes/AuthRoute";
 
@@ -12,10 +12,9 @@ const app = express();
 const PORT = process.env.APP_PORT;
 
 // (async () => {
-//   await db.sync();
 //   try {
-//     await db.sync();
-//     console.log("Synced database!");
+//     await db.sync({ alter: true });
+//     console.log("Synced databases!");
 //   } catch (err) {
 //     console.error("Failed to sync DB:", err);
 //   }

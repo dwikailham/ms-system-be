@@ -8,6 +8,7 @@ export interface UserAttributes {
   username: string;
   password: string;
   role: string;
+  is_active: boolean;
 }
 
 export interface UserCreationAttributes
@@ -20,6 +21,7 @@ class User extends Model<UserAttributes, {}> implements UserAttributes {
   public username!: string;
   public password!: string;
   public role!: string;
+  public is_active!: boolean;
 }
 
 const Users = User.init(
@@ -46,7 +48,7 @@ const Users = User.init(
       unique: true,
       validate: {
         notEmpty: true,
-        len: [6, 10],
+        len: [6, 20],
       },
     },
     password: {
@@ -58,6 +60,13 @@ const Users = User.init(
     },
     role: {
       type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
       validate: {
         notEmpty: true,
