@@ -112,10 +112,10 @@ export const updateUser = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  const { name, username, password, role, is_active } = req.body;
+  const { password, role, is_active } = req.body;
 
   let hashPassword;
-  if (password === "" || password === null) {
+  if (password === "" || password === null || !password) {
     hashPassword = user.password;
   } else {
     hashPassword = await argon2.hash(password);
@@ -124,9 +124,6 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     Users.update(
       {
-        name,
-        username,
-        password: hashPassword,
         role,
         is_active,
       },
