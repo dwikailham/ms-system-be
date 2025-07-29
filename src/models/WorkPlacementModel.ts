@@ -1,30 +1,29 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import db from "../config/Database";
 
-export interface UserAttributes {
+export interface WorkPlacementAttributes {
   id?: number; // optional if auto-increment
   uuid: string;
   name: string;
-  username: string;
-  password: string;
-  role: string;
+  address: string;
   is_active: boolean;
 }
 
 export interface UserCreationAttributes
-  extends Optional<UserAttributes, "id"> {}
+  extends Optional<WorkPlacementAttributes, "id"> {}
 
-class User extends Model<UserAttributes, {}> implements UserAttributes {
+class WorkPlacement
+  extends Model<WorkPlacementAttributes, {}>
+  implements WorkPlacementAttributes
+{
   public id!: number;
   public uuid!: string;
   public name!: string;
-  public username!: string;
-  public password!: string;
-  public role!: string;
+  public address!: string;
   public is_active!: boolean;
 }
 
-const Users = User.init(
+const WorkPlacements = WorkPlacement.init(
   {
     uuid: {
       type: DataTypes.STRING,
@@ -42,25 +41,10 @@ const Users = User.init(
         len: [3, 100],
       },
     },
-    username: {
+    address: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      validate: {
-        notEmpty: true,
-        len: [6, 20],
-      },
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
       validate: {
         notEmpty: true,
       },
@@ -75,9 +59,9 @@ const Users = User.init(
   },
   {
     sequelize: db,
-    tableName: "users",
+    tableName: "work_placement",
     freezeTableName: true,
   }
 );
 
-export default Users;
+export default WorkPlacements;
