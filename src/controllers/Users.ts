@@ -51,7 +51,7 @@ export const getUsers = async (req: Request, res: Response) => {
       },
     });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
 
@@ -74,7 +74,7 @@ export const getUserById = async (
     });
     res.status(200).json(response);
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
 
@@ -98,7 +98,7 @@ export const createUser = async (
 
     res.status(201).json({ message: "Registered!" });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
 
@@ -138,7 +138,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "User success updated!" });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
 
@@ -160,6 +160,6 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "User success deleted!" });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
