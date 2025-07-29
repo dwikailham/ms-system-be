@@ -94,6 +94,7 @@ export const createUser = async (
       username,
       password: hashPassword,
       role,
+      is_active: true,
     });
 
     res.status(201).json({ message: "Registered!" });
