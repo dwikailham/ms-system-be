@@ -1,29 +1,34 @@
 import { DataTypes, Model, Optional } from "sequelize";
+import WorkPlacementModel from "./WorkPlacementModel";
 import db from "../config/Database";
 
-export interface WorkPlacementAttributes {
+export interface EmployeeAttributes {
   id?: number; // optional if auto-increment
   uuid: string;
   name: string;
   address: string;
+  salary: number;
+  work_placement_id: number;
   is_active: boolean;
 }
 
-export interface UserCreationAttributes
-  extends Optional<WorkPlacementAttributes, "id"> {}
+export interface EmployeeCreationAttributes
+  extends Optional<EmployeeAttributes, "id"> {}
 
-class WorkPlacement
-  extends Model<WorkPlacementAttributes, {}>
-  implements WorkPlacementAttributes
+class Employee
+  extends Model<EmployeeAttributes, {}>
+  implements EmployeeAttributes
 {
   public id!: number;
   public uuid!: string;
   public name!: string;
   public address!: string;
+  public salary!: number;
+  public work_placement_id!: number;
   public is_active!: boolean;
 }
 
-const WorkPlacements = WorkPlacement.init(
+const Employees = Employee.init(
   {
     uuid: {
       type: DataTypes.STRING,
@@ -48,8 +53,22 @@ const WorkPlacements = WorkPlacement.init(
         notEmpty: true,
       },
     },
+    salary: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     is_active: {
       type: DataTypes.BOOLEAN,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    work_placement_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -58,9 +77,15 @@ const WorkPlacements = WorkPlacement.init(
   },
   {
     sequelize: db,
-    tableName: "work_placement",
+    tableName: "employee",
     freezeTableName: true,
   }
 );
 
-export default WorkPlacements;
+WorkPlacementModel.hasMany(Employees);
+Employees.belongsTo(WorkPlacementModel, {
+  foreignKey: "work_placement_id",
+  as: "work_placement",
+});
+
+export default Employees;
