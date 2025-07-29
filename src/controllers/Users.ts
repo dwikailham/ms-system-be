@@ -1,6 +1,7 @@
 import Users from "../models/UserModel";
 import argon2 from "argon2";
 import { Request, Response } from "express";
+import { Op } from "sequelize";
 
 type UserBody = {
   name: string;
@@ -13,9 +14,20 @@ export const getUsers = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const offset = (page - 1) * limit;
+  const search = (req.query.search as string)?.trim();
+
+  const whereClause = search
+    ? {
+        [Op.or]: [
+          { username: { [Op.like]: `%${search}%` } },
+          { name: { [Op.like]: `%${search}%` } },
+        ],
+      }
+    : undefined;
 
   try {
     const { count, rows } = await Users.findAndCountAll({
+      where: whereClause,
       limit,
       offset,
       order: [["createdAt", "DESC"]],
