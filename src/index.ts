@@ -7,6 +7,7 @@ import UseRoute from "./routes/UserRoute";
 import AuthRoute from "./routes/AuthRoute";
 import WorkPlacementRoute from "./routes/WorkPlacementRoute";
 import EmployeeRoute from "./routes/Employee";
+import PresenceRoute from "./routes/PresenceRoute";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use(UseRoute);
 app.use(AuthRoute);
 app.use(WorkPlacementRoute);
 app.use(EmployeeRoute);
+app.use(PresenceRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello from TypeScript and nodemon!");
