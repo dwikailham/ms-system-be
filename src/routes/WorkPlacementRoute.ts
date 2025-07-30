@@ -11,9 +11,21 @@ import {
 const router = express.Router();
 
 router.get("/work-placement", accessValidation, getWorkPlacement);
-router.get("/work-placement/:id", accessValidation, getWorkPlacementById);
+router.get(
+  "/work-placement/detail/:id",
+  accessValidation,
+  getWorkPlacementById
+);
 router.post("/work-placement", accessValidation, createWorkPlacement);
-router.patch("/work-placement/:id", accessValidation, updateWorkPlacement);
-router.delete("/work-placement/:id", accessValidation, deleteWorkPlacement);
+router.patch(
+  "/work-placement/update/:id",
+  accessValidation,
+  updateWorkPlacement
+);
+router.delete(
+  "/work-placement/delete/:id",
+  accessValidation,
+  deleteWorkPlacement
+);
 
 export default router;
