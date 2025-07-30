@@ -73,6 +73,40 @@ export const getById = async (req: Request<{ id: string }>, res: Response) => {
   }
 };
 
+export const getListEmployeeByWorkPlacement = async (
+  req: Request,
+  res: Response
+) => {
+  const work_placement_uuid = req?.query?.workPlacementId;
+  try {
+    if (work_placement_uuid) {
+      const response = await EmployeeModel.findAll({
+        where: {
+          is_active: true,
+        },
+        attributes: ["uuid", "name"],
+        include: [
+          {
+            where: {
+              uuid: work_placement_uuid,
+            },
+            model: WorkPlacementModel,
+            as: "work_placement",
+            attributes: ["name"],
+          },
+        ],
+      });
+
+      res.status(200).json(response);
+    } else {
+      res.status(200).json([]);
+    }
+  } catch (err) {
+    console.log("ERROR ", err);
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  }
+};
+
 export const createData = async (
   req: Request<{}, {}, BodyParams>,
   res: Response
