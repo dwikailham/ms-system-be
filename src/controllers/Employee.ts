@@ -102,7 +102,6 @@ export const getListEmployeeByWorkPlacement = async (
       res.status(200).json([]);
     }
   } catch (err) {
-    console.log("ERROR ", err);
     res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
