@@ -22,7 +22,6 @@ export interface PresenceAttributes {
   notes: string;
   employee_id: number;
   work_placement_id: number;
-  is_active: boolean;
 }
 
 export interface EmployeeCreationAttributes
@@ -43,7 +42,6 @@ class Presence
   public notes!: string;
   public employee_id!: number;
   public work_placement_id!: number;
-  public is_active!: boolean;
 }
 
 const Presences = Presence.init(
@@ -74,13 +72,6 @@ const Presences = Presence.init(
     notes: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
     },
     employee_id: {
       type: DataTypes.INTEGER,
