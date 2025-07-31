@@ -3,11 +3,13 @@ import dotenv from "dotenv";
 import cors from "cors";
 import db from "./config/Database";
 import "./models/UserModel";
-import UseRoute from "./routes/UserRoute";
-import AuthRoute from "./routes/AuthRoute";
-import WorkPlacementRoute from "./routes/WorkPlacementRoute";
-import EmployeeRoute from "./routes/Employee";
-import PresenceRoute from "./routes/PresenceRoute";
+import {
+  AuthRoute,
+  EmployeeRoute,
+  PresenceRoute,
+  UserRoute,
+  WorkPlacementRoute,
+} from "./routes";
 
 dotenv.config();
 
@@ -30,7 +32,7 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(UseRoute);
+app.use(UserRoute);
 app.use(AuthRoute);
 app.use(WorkPlacementRoute);
 app.use(EmployeeRoute);
