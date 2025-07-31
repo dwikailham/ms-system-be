@@ -20,6 +20,7 @@ export interface PresenceAttributes {
     | ATTENDANCE.PRESENT
     | ATTENDANCE.SICK;
   notes: string;
+  is_paid: boolean;
   employee_id: number;
   work_placement_id: number;
 }
@@ -42,6 +43,7 @@ class Presence
   public notes!: string;
   public employee_id!: number;
   public work_placement_id!: number;
+  public is_paid!: boolean;
 }
 
 const Presences = Presence.init(
@@ -72,6 +74,10 @@ const Presences = Presence.init(
     notes: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    is_paid: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     employee_id: {
       type: DataTypes.INTEGER,
