@@ -1,12 +1,12 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { UserAttributes } from "../models/UserModel";
+import Users, { UserAttributes } from "../models/UserModel";
 
 interface ValidationRequest extends Request {
   user_data: UserAttributes;
 }
 
-export const accessValidation = (
+export const accessValidation = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -25,6 +25,15 @@ export const accessValidation = (
     const jwt_decode = jwt.verify(token, JWT_SECRET);
 
     if (typeof jwt_decode !== "string") {
+      const response = await Users.findOne({
+        where: { uuid: jwt_decode.uuid },
+        attributes: ["uuid"],
+      });
+      if (!response) {
+        return res.status(401).json({
+          message: "Unauthorized, User not found",
+        });
+      }
       validationRequest.user_data = jwt_decode as UserAttributes;
     }
   } catch (err) {
