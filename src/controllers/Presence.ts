@@ -20,14 +20,16 @@ type BodyParams = {
   }>;
 };
 
-type PresenceWithEmployeeName = {
+export type PresenceWithEmployeeName = {
   uuid: string;
   date: string;
   employee_id: number;
   notes: string;
   attendance: string;
+  is_paid: number;
   "employee.uuid": string;
   "employee.name": string;
+  "employee.salary": string;
   "work_placement.name": string;
   "work_placement.uuid": string;
 };
