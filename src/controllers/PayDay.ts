@@ -100,6 +100,17 @@ export const getListPresenceByParams = async (req: Request, res: Response) => {
   }
 };
 
+export const getPayDayByDetail = async (
+  req: Request<{ id: string }>,
+  res: Response
+) => {
+  const payday = await PayDayModel.findOne({
+    where: { payday_id: req.params.id },
+  });
+
+  if (!payday) return res.status(400).json({ message: "DATA NOT FOUND" });
+};
+
 export const submitPayroll = async (
   req: Request<{}, {}, TBodyParamsPayRoll>,
   res: Response
@@ -134,5 +145,35 @@ export const submitPayroll = async (
     res.status(201).json({ message: "Payment success created!" });
   } catch (err: any) {
     res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  }
+};
+
+export const updateBackFill = async (req: Request, res: Response) => {
+  const paydays = await PayDayModel.findAll({ raw: true });
+
+  if (!paydays) {
+    return res.status(400).json({ message: "DATA NOT FOUND" });
+  }
+
+  for (const payday of paydays) {
+    try {
+      await PresenceModel.update(
+        { payday_id: payday.id },
+        {
+          where: {
+            employee_id: payday.employee_id,
+            work_placement_id: payday.work_placement_id,
+            date: {
+              [Op.between]: [payday.start_date, payday.end_date],
+            },
+            is_paid: true, // optional: only update paid presences
+          },
+        }
+      );
+
+      res.json(200).json({ message: "SUCCESS" });
+    } catch (error) {
+      res.json(500).json({ message: "INTERNAL SERVER ERROR" });
+    }
   }
 };

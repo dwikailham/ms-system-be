@@ -1,6 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
-import EmployeeModel from "./EmployeeModel";
-import WorkPlacementModel from "./WorkPlacementModel";
+import { EmployeeModel, WorkPlacementModel, PayDayModel } from "./index";
 import db from "../config/Database";
 
 export enum ATTENDANCE {
@@ -23,6 +22,7 @@ export interface PresenceAttributes {
   is_paid: boolean;
   employee_id: number;
   work_placement_id: number;
+  payday_id: number;
 }
 
 export interface EmployeeCreationAttributes
@@ -44,6 +44,7 @@ class Presence
   public employee_id!: number;
   public work_placement_id!: number;
   public is_paid!: boolean;
+  public payday_id!: number;
 }
 
 const Presences = Presence.init(
@@ -101,6 +102,14 @@ const Presences = Presence.init(
         key: "id",
       },
     },
+    payday_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "payday",
+        key: "id",
+      },
+    },
   },
   {
     sequelize: db,
@@ -117,6 +126,16 @@ Presences.belongsTo(EmployeeModel, {
 Presences.belongsTo(WorkPlacementModel, {
   foreignKey: "work_placement_id",
   as: "work_placement",
+});
+
+Presence.belongsTo(PayDayModel, {
+  foreignKey: "payday_id",
+  as: "payday",
+});
+
+PayDayModel.hasMany(Presence, {
+  foreignKey: "payday_id",
+  as: "presences",
 });
 
 export default Presences;
