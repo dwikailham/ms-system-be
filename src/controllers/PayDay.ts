@@ -1,0 +1,138 @@
+import { Request, Response } from "express";
+import { Op } from "sequelize";
+
+import {
+  EmployeeModel,
+  WorkPlacementModel,
+  PresenceModel,
+  PayDayModel,
+} from "../models";
+import { PresenceWithEmployeeName } from "./Presence";
+import { v4 as uuidv4 } from "uuid";
+
+type TBodyParamsPayRoll = {
+  work_placement_id: number;
+  start_date: string;
+  end_date: string;
+  employees: Array<{
+    employee_id: string;
+    total_days: number;
+    total_salary: number;
+  }>;
+};
+
+export const getListPresenceByParams = async (req: Request, res: Response) => {
+  const work_placement_id = (req.query?.work_placement_id as string) || "";
+  const { startDate, endDate } = req.query as {
+    startDate?: string;
+    endDate?: string;
+  };
+
+  try {
+    if (!startDate || !endDate || !work_placement_id) {
+      return res.status(200).json([]);
+    }
+
+    const res_work_placement_id = await WorkPlacementModel.findOne({
+      where: { uuid: work_placement_id },
+      attributes: ["id"],
+      raw: true,
+    });
+
+    if (!res_work_placement_id) {
+      res.status(400).json({ message: "WORK PLACEMENT NOT FOUND" });
+    }
+
+    const response = (await PresenceModel.findAll({
+      where: {
+        work_placement_id: res_work_placement_id?.id,
+        ...(startDate && endDate
+          ? { date: { [Op.between]: [startDate, endDate] } }
+          : undefined),
+        is_paid: false,
+      },
+      attributes: [
+        "uuid",
+        "date",
+        "attendance",
+        "is_paid",
+        "employee_id",
+        "notes",
+      ],
+      include: [
+        {
+          model: EmployeeModel,
+          attributes: ["name", "id", "salary"],
+          as: "employee",
+        },
+      ],
+      raw: true,
+    })) as unknown as PresenceWithEmployeeName[];
+
+    const groupedByDate: any = {};
+
+    for (const record of response) {
+      const { date, employee_id, notes, attendance } = record;
+
+      if (!groupedByDate[date]) {
+        groupedByDate[date] = [];
+      }
+
+      groupedByDate[date].push({
+        employee_id,
+        work_placement_id,
+        notes,
+        attendance,
+        name_employee: record["employee.name"],
+        salary_employee: record["employee.salary"],
+      });
+    }
+
+    // 3. Convert to desired array format
+    const result = Object.entries(groupedByDate).map(([date, employees]) => ({
+      date,
+      employees,
+    }));
+
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  }
+};
+
+export const submitPayroll = async (
+  req: Request<{}, {}, TBodyParamsPayRoll>,
+  res: Response
+) => {
+  const { employees, end_date, start_date, work_placement_id } = req.body;
+  if (!employees.length || !end_date || !start_date || !work_placement_id) {
+    return res.status(400).json({ message: "BAD REQUEST" });
+  }
+  try {
+    const payload = employees.map((el) => ({
+      ...el,
+      payday_id: uuidv4(),
+      start_date,
+      end_date,
+      work_placement_id,
+    }));
+
+    await PayDayModel.bulkCreate(payload);
+    await PresenceModel.update(
+      { is_paid: true },
+      {
+        where: {
+          work_placement_id,
+          date: {
+            [Op.between]: [start_date, end_date],
+          },
+          is_paid: false,
+        },
+      }
+    );
+
+    res.status(201).json({ message: "Payment success created!" });
+  } catch (err: any) {
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  }
+};
