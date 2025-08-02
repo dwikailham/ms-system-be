@@ -155,8 +155,8 @@ export const updateBackFill = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "DATA NOT FOUND" });
   }
 
-  for (const payday of paydays) {
-    try {
+  await Promise.all(
+    paydays.map(async (payday) => {
       await PresenceModel.update(
         { payday_id: payday.id },
         {
@@ -166,14 +166,12 @@ export const updateBackFill = async (req: Request, res: Response) => {
             date: {
               [Op.between]: [payday.start_date, payday.end_date],
             },
-            is_paid: true, // optional: only update paid presences
+            is_paid: true,
           },
         }
       );
+    })
+  );
 
-      res.json(200).json({ message: "SUCCESS" });
-    } catch (error) {
-      res.json(500).json({ message: "INTERNAL SERVER ERROR" });
-    }
-  }
+  res.status(200).json({ message: "Payday IDs backfilled successfully." });
 };
