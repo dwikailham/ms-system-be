@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Op } from "sequelize";
+import { Op, Model } from "sequelize";
 
 import {
   EmployeeModel,
@@ -128,19 +128,27 @@ export const submitPayroll = async (
       work_placement_id,
     }));
 
-    await PayDayModel.bulkCreate(payload);
-    await PresenceModel.update(
-      { is_paid: true },
-      {
-        where: {
-          work_placement_id,
-          date: {
-            [Op.between]: [start_date, end_date],
-          },
-          is_paid: false,
+    const createdPaydays = await PayDayModel.bulkCreate(payload, {
+      returning: true,
+    });
+
+    for (const payday of createdPaydays) {
+      await PresenceModel.update(
+        {
+          is_paid: true,
+          payday_id: payday.id,
         },
-      }
-    );
+        {
+          where: {
+            employee_id: payday.employee_id,
+            work_placement_id: payday.work_placement_id,
+            date: {
+              [Op.between]: [payday.start_date, payday.end_date],
+            },
+          },
+        }
+      );
+    }
 
     res.status(201).json({ message: "Payment success created!" });
   } catch (err: any) {
