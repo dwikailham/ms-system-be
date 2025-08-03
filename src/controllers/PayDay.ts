@@ -109,6 +109,36 @@ export const getPayDayByDetail = async (
   });
 
   if (!payday) return res.status(400).json({ message: "DATA NOT FOUND" });
+
+  // Get all related presence records
+  try {
+    const presenceRecords = await PresenceModel.findAll({
+      where: {
+        payday_id: payday.id,
+      },
+      attributes: ["date", "employee_id", "work_placement_id"],
+      order: [["date", "ASC"]],
+      raw: true,
+    });
+
+    // Group by date
+    const grouped: any = {};
+
+    presenceRecords.forEach(({ date, employee_id, work_placement_id }) => {
+      if (!grouped[date]) grouped[date] = [];
+      grouped[date].push({ employee_id, work_placement_id });
+    });
+
+    // Final format
+    const result = Object.entries(grouped).map(([date, employees]) => ({
+      date,
+      employees,
+    }));
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json("INTERNAL SERVER ERROR");
+  }
 };
 
 export const submitPayroll = async (
