@@ -28,6 +28,7 @@ export type PresenceWithEmployeeName = {
   attendance: string;
   is_paid: number;
   "employee.uuid": string;
+  "employee.id": number;
   "employee.name": string;
   "employee.salary": string;
   "work_placement.name": string;
@@ -64,7 +65,7 @@ export const getList = async (req: Request, res: Response) => {
       where: {
         uuid: { [Op.in]: paginatedUuids },
       },
-      attributes: ["uuid", "date", "employee_id"],
+      attributes: ["uuid", "date", "employee_id", "attendance"],
       include: [
         {
           model: EmployeeModel,
@@ -73,7 +74,7 @@ export const getList = async (req: Request, res: Response) => {
         },
         {
           model: WorkPlacementModel,
-          attributes: ["name"],
+          attributes: ["name", "uuid"],
           as: "work_placement",
         },
       ],
@@ -90,6 +91,18 @@ export const getList = async (req: Request, res: Response) => {
             uuid: curr.uuid,
             date: curr.date,
             work_placement: curr["work_placement.name"],
+            count_presence: {
+              attendance: presenceData.filter(
+                (el) =>
+                  el.attendance === "HADIR" &&
+                  el.employee_id === curr["employee.id"]
+              ).length,
+              leave: presenceData.filter(
+                (el) =>
+                  el.attendance !== "HADIR" &&
+                  el.employee_id === curr["employee.id"]
+              ).length,
+            },
             employees: [],
           };
         }
