@@ -91,18 +91,11 @@ export const getList = async (req: Request, res: Response) => {
             uuid: curr.uuid,
             date: curr.date,
             work_placement: curr["work_placement.name"],
-            count_presence: {
-              attendance: presenceData.filter(
-                (el) =>
-                  el.attendance === "HADIR" &&
-                  el.employee_id === curr["employee.id"]
-              ).length,
-              leave: presenceData.filter(
-                (el) =>
-                  el.attendance !== "HADIR" &&
-                  el.employee_id === curr["employee.id"]
-              ).length,
-            },
+            count_presence: presenceData.filter(
+              (el) =>
+                el.attendance === "HADIR" &&
+                el.employee_id === curr["employee.id"]
+            ).length,
             employees: [],
           };
         }
