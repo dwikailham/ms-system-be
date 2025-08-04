@@ -166,7 +166,7 @@ export const updateData = async (req: Request, res: Response) => {
         address,
         is_active,
         salary,
-        work_placement_id,
+        work_placement_id: workPlacementId?.dataValues.id,
       },
       {
         where: {

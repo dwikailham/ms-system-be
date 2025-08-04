@@ -54,7 +54,7 @@ const Employees = Employee.init(
       },
     },
     salary: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       allowNull: false,
       validate: {
         notEmpty: true,
