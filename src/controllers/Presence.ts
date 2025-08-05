@@ -277,27 +277,24 @@ export const updateData = async (req: Request, res: Response) => {
     uuid: el.uuid,
   }));
 
-  const t = await db.transaction();
-
   try {
-    await PrecenseModel.destroy({ where: { uuid: req.params.id } });
-
-    const newRecords = employees.map((entry) => {
-      return {
-        uuid,
-        date,
-        work_placement_id: existingWorkPlacement?.id,
-        employee_id: formatEmployee.find(
-          (el) => el?.uuid === entry?.employee_id
-        )?.id,
-        attendance: entry.attendance,
-        notes: entry.notes || "",
-      };
-    });
-
-    await PrecenseModel.bulkCreate(newRecords, { transaction: t });
-
-    await t.commit();
+    await Promise.all(
+      employees.map(async (el) => {
+        await PrecenseModel.update(
+          { attendance: el.attendance, notes: el.notes },
+          {
+            where: {
+              employee_id: formatEmployee.find(
+                (empl) => empl?.uuid === el?.employee_id
+              )?.id,
+              work_placement_id: existingWorkPlacement?.id,
+              date,
+              is_paid: false,
+            },
+          }
+        );
+      })
+    );
 
     res.status(200).json({ message: "Presence success updated!" });
   } catch (err: any) {
