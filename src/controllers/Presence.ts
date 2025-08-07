@@ -78,7 +78,7 @@ export const getList = async (req: Request, res: Response) => {
           as: "work_placement",
         },
       ],
-      order: [["uuid", "DESC"]],
+      order: [["date", "DESC"]],
       raw: true,
     })) as unknown as PresenceWithEmployeeName[];
 
@@ -92,9 +92,7 @@ export const getList = async (req: Request, res: Response) => {
             date: curr.date,
             work_placement: curr["work_placement.name"],
             count_presence: presenceData.filter(
-              (el) =>
-                el.attendance === "HADIR" &&
-                el.employee_id === curr["employee.id"]
+              (el) => el.attendance === "HADIR" && el.uuid === curr.uuid
             ).length,
             employees: [],
           };
