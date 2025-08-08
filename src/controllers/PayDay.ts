@@ -154,6 +154,7 @@ export const getList = async (req: Request, res: Response) => {
         "end_date",
         "total_days",
         "total_salary",
+        "work_placement_id",
       ],
       include: [
         {
@@ -168,7 +169,7 @@ export const getList = async (req: Request, res: Response) => {
 
     const grouped = Object.values(
       presenceData.reduce((acc, curr) => {
-        const key = `${curr.start_date}_${curr.end_date}`;
+        const key = `${curr.start_date}_${curr.end_date}_${curr.work_placement_id}`;
 
         if (!acc[key]) {
           acc[key] = {
