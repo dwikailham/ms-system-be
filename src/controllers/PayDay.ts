@@ -149,13 +149,23 @@ export const submitPayroll = async (
   if (!employees.length || !end_date || !start_date || !work_placement_id) {
     return res.status(400).json({ message: "BAD REQUEST" });
   }
+
+  const res_work_placement_id = await WorkPlacementModel.findOne({
+    where: { uuid: work_placement_id },
+    attributes: ["id"],
+    raw: true,
+  });
+
+  if (!res_work_placement_id) {
+    res.status(400).json({ message: "WORK PLACEMENT NOT FOUND" });
+  }
   try {
     const payload = employees.map((el) => ({
       ...el,
       payday_id: uuidv4(),
       start_date,
       end_date,
-      work_placement_id,
+      work_placement_id: res_work_placement_id?.id,
     }));
 
     const createdPaydays = await PayDayModel.bulkCreate(payload, {
