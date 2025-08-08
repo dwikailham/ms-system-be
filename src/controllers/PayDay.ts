@@ -84,7 +84,7 @@ export const getListPresenceByParams = async (req: Request, res: Response) => {
         notes,
         attendance,
         name_employee: record["employee.name"],
-        salary_employee: record["employee.salary"],
+        salary_employee: attendance === "HADIR" ? record["employee.salary"] : 0,
       });
     }
 
