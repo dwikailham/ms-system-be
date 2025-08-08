@@ -21,6 +21,23 @@ type TBodyParamsPayRoll = {
   }>;
 };
 
+type TListRawPayday = {
+  payday_id: string;
+  start_date: string;
+  end_date: string;
+  total_days: number;
+  total_salary: number;
+  "work_placement.name": string;
+};
+
+type TListGroupingPayday = {
+  payday_id: string;
+  start_date: string;
+  end_date: string;
+  total_salary: number;
+  work_placement: string;
+};
+
 export const getListPresenceByParams = async (req: Request, res: Response) => {
   const work_placement_id = (req.query?.work_placement_id as string) || "";
   const { startDate, endDate } = req.query as {
@@ -96,6 +113,89 @@ export const getListPresenceByParams = async (req: Request, res: Response) => {
 
     res.status(200).json(result);
   } catch (err) {
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  }
+};
+
+export const getList = async (req: Request, res: Response) => {
+  const { startDate, endDate } = req.query as {
+    startDate?: string;
+    endDate?: string;
+  };
+
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const { rows: uuidRows } = await PayDayModel.findAndCountAll({
+      where: {
+        ...(startDate && endDate
+          ? { date: { [Op.between]: [startDate, endDate] } }
+          : undefined),
+      },
+      attributes: [[PayDayModel.sequelize!.col("payday_id"), "payday_id"]],
+      group: ["payday_id", "start_date", "end_date", "work_placement_id"],
+      order: [["createdAt", "DESC"]],
+      raw: true,
+    });
+
+    const allUuids = uuidRows.map((row) => row.payday_id);
+    const paginatedUuids = allUuids.slice(offset, offset + limit);
+
+    const presenceData = (await PayDayModel.findAll({
+      where: {
+        payday_id: { [Op.in]: paginatedUuids },
+      },
+      attributes: [
+        "payday_id",
+        "start_date",
+        "end_date",
+        "total_days",
+        "total_salary",
+      ],
+      include: [
+        {
+          model: WorkPlacementModel,
+          attributes: ["name"],
+          as: "work_placement",
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      raw: true,
+    })) as unknown as TListRawPayday[];
+
+    const grouped = Object.values(
+      presenceData.reduce((acc, curr) => {
+        const key = `${curr.start_date}_${curr.end_date}`;
+
+        if (!acc[key]) {
+          acc[key] = {
+            payday_id: curr.payday_id,
+            start_date: curr.start_date,
+            end_date: curr.end_date,
+            work_placement: curr["work_placement.name"],
+            total_salary: 0,
+          };
+        }
+
+        acc[key].total_salary += Number(curr.total_salary);
+
+        return acc;
+      }, {} as Record<string, TListGroupingPayday>)
+    );
+
+    res.status(200).json({
+      meta: {
+        total: allUuids.length,
+        totalPages: Math.ceil(allUuids.length / limit),
+        currentPage: page,
+        pageSize: limit,
+      },
+      data: grouped,
+    });
+  } catch (err: any) {
+    console.log("ERROR", err);
     res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
