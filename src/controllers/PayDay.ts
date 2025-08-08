@@ -27,6 +27,7 @@ type TListRawPayday = {
   end_date: string;
   total_days: number;
   total_salary: number;
+  work_placement_id: number;
   "work_placement.name": string;
 };
 
@@ -195,7 +196,6 @@ export const getList = async (req: Request, res: Response) => {
       data: grouped,
     });
   } catch (err: any) {
-    console.log("ERROR", err);
     res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
@@ -204,38 +204,45 @@ export const getPayDayByDetail = async (
   req: Request<{ id: string }>,
   res: Response
 ) => {
-  const payday = await PayDayModel.findOne({
+  const payday = (await PayDayModel.findOne({
     where: { payday_id: req.params.id },
-  });
+    include: [
+      {
+        model: WorkPlacementModel,
+        attributes: ["name"],
+        as: "work_placement",
+      },
+    ],
+    raw: true,
+  })) as unknown as TListRawPayday;
 
   if (!payday) return res.status(400).json({ message: "DATA NOT FOUND" });
 
-  // Get all related presence records
   try {
-    const presenceRecords = await PresenceModel.findAll({
+    const all_data = await PayDayModel.findAll({
       where: {
-        payday_id: payday.id,
+        start_date: payday.start_date,
+        end_date: payday.end_date,
+        work_placement_id: payday.work_placement_id,
       },
-      attributes: ["date", "employee_id", "work_placement_id"],
-      order: [["date", "ASC"]],
-      raw: true,
+      attributes: ["employee_id", "total_salary", "total_days"],
+      include: [
+        {
+          model: EmployeeModel,
+          attributes: ["name"],
+          as: "employee",
+        },
+      ],
     });
 
-    // Group by date
-    const grouped: any = {};
+    const response = {
+      start_date: payday.start_date,
+      end_date: payday.end_date,
+      work_placement: payday["work_placement.name"],
+      employees: all_data,
+    };
 
-    presenceRecords.forEach(({ date, employee_id, work_placement_id }) => {
-      if (!grouped[date]) grouped[date] = [];
-      grouped[date].push({ employee_id, work_placement_id });
-    });
-
-    // Final format
-    const result = Object.entries(grouped).map(([date, employees]) => ({
-      date,
-      employees,
-    }));
-
-    res.status(200).json(result);
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json("INTERNAL SERVER ERROR");
   }
